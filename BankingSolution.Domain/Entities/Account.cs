@@ -3,7 +3,7 @@ using OneOf;
 
 namespace BankingSolution.Domain.Entities;
 
-public class Account : IEquatable<Account>
+public record Account
 {
     private readonly List<AccountTransaction> _accountTransactions = new();
     public Ulid Id { get; init; }
@@ -75,36 +75,6 @@ public class Account : IEquatable<Account>
         _accountTransactions.Add(withDrawTransaction);
         
         return new AccountWithdrawSucceeded(withDrawTransaction);
-    }
-    
-    public bool Equals(Account? other)
-    {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return Id.Equals(other.Id) && User.Id.Equals(other.User.Id);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is null) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Account)obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Id, User.Id);
-    }
-
-    public static bool operator ==(Account a, Account? b)
-    {
-        return a.Equals(b);
-    }
-
-    public static bool operator !=(Account a, Account? b)
-    {
-        return !a.Equals(b);
     }
     
     private bool IsValidOperationFundAmount(decimal amount) => amount > 0;
