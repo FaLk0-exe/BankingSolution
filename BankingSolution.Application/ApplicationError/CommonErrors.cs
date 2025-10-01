@@ -8,6 +8,6 @@ public static class CommonErrors
         new ApplicationLayerError($"{type.BaseType}NotFound", ApplicationErrorKind.NotFound, new { Id = id });
 
     public static ApplicationLayerError AccountOperationError(IDomainError domainError) =>
-        new ApplicationLayerError(domainError.GetType().BaseType!.ToString(), ApplicationErrorKind.BusinessRule,
+        new ApplicationLayerError(domainError.GetType().Name, ApplicationErrorKind.BusinessRule,
             domainError);
 }

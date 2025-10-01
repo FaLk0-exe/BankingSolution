@@ -22,23 +22,23 @@ public class AccountService
         _transferService = transferService;
     }
 
-    public async Task<List<AccountResponse>> GetAccountsAsync(AccountQueryFilter queryFilter, CancellationToken ct)
+    public async Task<List<AccountResponse>> GetAccountsAsync(AccountQueryParams queryParams, CancellationToken ct)
     {
         var query = _dbContext.Accounts.AsNoTracking();
 
-        if (queryFilter.AccountIds.Any())
-            query = query.Where(x => queryFilter.AccountIds.Contains(x.Id));
+        if (queryParams.AccountIds is not null && queryParams.AccountIds.Any())
+            query = query.Where(x => queryParams.AccountIds.Contains(x.Id));
 
-        if (queryFilter.UserIds.Any())
-            query = query.Where(x => queryFilter.UserIds.Contains(x.Id));
+        if (queryParams.UserIds is not null && queryParams.UserIds.Any())
+            query = query.Where(x => queryParams.UserIds.Contains(x.Id));
 
         return await query
-            .Skip((int)(queryFilter.Page * queryFilter.PageSize))
-            .Take((int)queryFilter.PageSize)
+            .Skip((int)(queryParams.Page * queryParams.PageSize))
+            .Take((int)queryParams.PageSize)
             .Select(x => new AccountResponse(x.Id, x.User.Id, x.AccountTransactions.Sum(a => a.Amount)))
             .ToListAsync(ct);
     }
-
+    
     public async Task<OneOf<AccountDetailsResponse, ApplicationLayerError>> GetAccountByIdAsync(Ulid id,
         CancellationToken ct)
     {
@@ -61,6 +61,7 @@ public class AccountService
                                 ? ((WithdrawAccountTransaction)at).AccountTo!.Id
                                 : null)
                     )
+                    .OrderByDescending(s=>s.Id)
                     .ToList()
             ))
             .FirstOrDefaultAsync(ct);
@@ -71,7 +72,7 @@ public class AccountService
         return account;
     }
 
-    public async Task<OneOf<Account, ApplicationLayerError>> CreateAccountAsync(Ulid userId, decimal initialAmount,
+    public async Task<OneOf<AccountDetailsResponse, ApplicationLayerError>> CreateAccountAsync(Ulid userId, decimal initialAmount,
         CancellationToken ct)
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
@@ -84,12 +85,33 @@ public class AccountService
         if (accountCreationResult.IsT1)
             return CommonErrors.AccountOperationError(accountCreationResult.AsT1);
 
+        var account = accountCreationResult.AsT0;
+        
+        _dbContext.Accounts.Add(account);
         await _dbContext.SaveChangesAsync(ct);
 
-        return accountCreationResult.AsT0;
-    }
+        return new AccountDetailsResponse(
+            account.Id,
+            account.User.Id,
+            account.Balance,
+            account.AccountTransactions.Select(at => new AccountTransactionResponse(
+                    at.Id,
+                    at.Amount,
+                    at.Type,
+                    at is ReplenishAccountTransaction
+                        ? ((ReplenishAccountTransaction)at).AccountFrom is not null?
+                            ((ReplenishAccountTransaction)at).AccountFrom.Id:
+                            null
+                        : null,
+                    at is WithdrawAccountTransaction
+                        ? ((WithdrawAccountTransaction)at).AccountTo is not null?
+                            ((WithdrawAccountTransaction)at).AccountTo.Id:
+                            null
+                        : null))
+                .ToList());
+        }
 
-    public async Task<OneOf<AccountReplenishSucceeded, ApplicationLayerError>> ReplenishAccountAsync(Ulid accountId,
+    public async Task<OneOf<AccountTransactionResponse, ApplicationLayerError>> ReplenishAccountAsync(Ulid accountId,
         decimal amount, CancellationToken ct)
     {
         var account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == accountId, ct);
@@ -103,11 +125,20 @@ public class AccountService
             return CommonErrors.AccountOperationError(replenishResult.AsT1);
 
         await _dbContext.SaveChangesAsync(ct);
+        
+        var transaction = replenishResult.AsT0.ReplenishAccountTransaction;
 
-        return replenishResult.AsT0;
+
+        return new AccountTransactionResponse(
+            transaction.Id,
+            transaction.Amount,
+            transaction.Type,
+            null,
+            null
+        );
     }
 
-    public async Task<OneOf<AccountWithdrawSucceeded, ApplicationLayerError>> WithdrawAccountAsync(Ulid accountId,
+    public async Task<OneOf<AccountTransactionResponse, ApplicationLayerError>> WithdrawAccountAsync(Ulid accountId,
         decimal amount, CancellationToken ct)
     {
         var account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == accountId, ct);
@@ -122,10 +153,18 @@ public class AccountService
 
         await _dbContext.SaveChangesAsync(ct);
 
-        return withdrawResult.AsT0;
+        var transaction = withdrawResult.AsT0.WithdrawAccountTransaction;
+        
+        return new AccountTransactionResponse(
+            transaction.Id,
+            transaction.Amount,
+            transaction.Type,
+            null,
+            null
+        );
     }
 
-    public async Task<OneOf<TransferSucceeded, ApplicationLayerError>> TransferFundsAsync(Ulid accountFromId,
+    public async Task<OneOf<AccountTransactionResponse, ApplicationLayerError>> TransferFundsAsync(Ulid accountFromId,
         Ulid accountToId, decimal amount, CancellationToken ct)
     {
         var accountFrom = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == accountFromId, ct);
@@ -144,6 +183,14 @@ public class AccountService
 
         await _dbContext.SaveChangesAsync(ct);
 
-        return transferFundsResult.AsT0;
+        var transaction = transferFundsResult.AsT0.WithdrawAccountTransaction;
+
+        return new AccountTransactionResponse(
+            transaction.Id,
+            transaction.Amount,
+            transaction.Type,
+            null,
+            transaction.AccountTo!.Id
+        );
     }
 }

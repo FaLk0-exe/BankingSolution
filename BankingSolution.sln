@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankingSolution.Infrastruct
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankingSolution.Application", "BankingSolution.Application\BankingSolution.Application.csproj", "{AA801396-6A8C-4CE1-B32E-8EC02D302ECD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankingSolution.Tests.Integration", "BankingSolution.Tests.Integration\BankingSolution.Tests.Integration.csproj", "{6DF9CBE0-2AA5-46F3-9201-62AB7EA4D8DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankingSolution.Tests.Unit", "BankingSolution.Tests.Unit\BankingSolution.Tests.Unit.csproj", "{5AA2C0A8-4CB6-4F9B-8E90-7F06B391B18E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{AA801396-6A8C-4CE1-B32E-8EC02D302ECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA801396-6A8C-4CE1-B32E-8EC02D302ECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA801396-6A8C-4CE1-B32E-8EC02D302ECD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DF9CBE0-2AA5-46F3-9201-62AB7EA4D8DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DF9CBE0-2AA5-46F3-9201-62AB7EA4D8DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DF9CBE0-2AA5-46F3-9201-62AB7EA4D8DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DF9CBE0-2AA5-46F3-9201-62AB7EA4D8DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AA2C0A8-4CB6-4F9B-8E90-7F06B391B18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AA2C0A8-4CB6-4F9B-8E90-7F06B391B18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AA2C0A8-4CB6-4F9B-8E90-7F06B391B18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AA2C0A8-4CB6-4F9B-8E90-7F06B391B18E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

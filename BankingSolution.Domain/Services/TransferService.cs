@@ -11,13 +11,13 @@ public class TransferService
     {
         var withdrawResult = accountFrom.Withdraw(amount, accountTo);
         if (!withdrawResult.IsT0)
-            return (OneOf<TransferSucceeded, IDomainError>)withdrawResult.Value;
+            return OneOf<TransferSucceeded, IDomainError>.FromT1(withdrawResult.AsT1);
 
         var replenishResult = accountTo.Replenish(amount, accountFrom);
         if (!replenishResult.IsT0)
-            return (OneOf<TransferSucceeded, IDomainError>)replenishResult.Value;
+            return OneOf<TransferSucceeded, IDomainError>.FromT1(replenishResult.AsT1);
 
-        return new TransferSucceeded(accountFrom, accountTo,
+        return new TransferSucceeded(
             (accountFrom.AccountTransactions.Last(s =>
                 s is WithdrawAccountTransaction) as WithdrawAccountTransaction)!);
     }

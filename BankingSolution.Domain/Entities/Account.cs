@@ -74,7 +74,7 @@ public class Account : IEquatable<Account>
         
         _accountTransactions.Add(withDrawTransaction);
         
-        return new AccountWithdrawSucceeded();
+        return new AccountWithdrawSucceeded(withDrawTransaction);
     }
     
     public bool Equals(Account? other)

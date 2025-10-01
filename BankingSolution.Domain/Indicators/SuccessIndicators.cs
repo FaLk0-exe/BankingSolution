@@ -2,6 +2,6 @@
 
 namespace BankingSolution.Domain.Indicators;
 
-public struct AccountReplenishSucceeded(ReplenishAccountTransaction replenishAccountTransaction);
-public struct AccountWithdrawSucceeded(WithdrawAccountTransaction withdrawAccountTransaction);
-public struct TransferSucceeded(Account From, Account To, WithdrawAccountTransaction accountTransaction);
+public record struct AccountReplenishSucceeded(ReplenishAccountTransaction ReplenishAccountTransaction);
+public record struct AccountWithdrawSucceeded(WithdrawAccountTransaction WithdrawAccountTransaction);
+public record struct TransferSucceeded(WithdrawAccountTransaction WithdrawAccountTransaction);
